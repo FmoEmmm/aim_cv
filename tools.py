@@ -38,7 +38,7 @@ def find_c(scimg):
     
     return contours
 
-def move_cc(contour):
+def move_cc(contour,speed):
     (x, y), radius = cv2.minEnclosingCircle(contour)  
     
     area_ratio = cv2.contourArea(contour) / (np.pi * radius**2)
@@ -52,7 +52,7 @@ def move_cc(contour):
         pyautogui.moveTo(center_x, center_y, duration=0.2)
         pyautogui.click()
         
-        time.sleep(0.1) 
+        time.sleep(speed) 
     
     
 if __name__ == "__main__":
