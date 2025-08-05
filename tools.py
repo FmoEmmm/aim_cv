@@ -4,8 +4,6 @@ import numpy as np
 import pyautogui
 import time
 
-
-
 def get_sc():
     with mss.mss() as sct:
         monitor = sct.monitors[1]  # 假设是主显示器
@@ -21,9 +19,9 @@ def get_sc():
         return scimg
 
 
-def find_c(img_b):
+def find_c(scimg):
     #蓝色的颜色范围 HSV
-    hsv = cv2.cvtColor(img_b, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(scimg, cv2.COLOR_BGR2HSV)
     lower_blue = np.array([100, 150, 50])  # 蓝色下限
     upper_blue = np.array([140, 255, 255]) # 蓝色上限
             
@@ -40,23 +38,21 @@ def find_c(img_b):
     
     return contours
 
-def move_cc(contour,img_b):
-    (x, y), radius = cv2.minEnclosingCircle(contour)               
+def move_cc(contour):
+    (x, y), radius = cv2.minEnclosingCircle(contour)  
+    
+    area_ratio = cv2.contourArea(contour) / (np.pi * radius**2)
+                    
+    # 假设比值在 0.7 到 1.0 之间认为是圆形
+    if 0.7 < area_ratio < 1.1:             
             # 转换中心点坐标为整数
-    center_x = int(x)
-    center_y = int(y)
-    # 绘制一个圆形和中心点，用于调试和可视化
-    cv2.circle(img_b, (center_x, center_y), int(radius), (0, 255, 0), 2)
-    cv2.circle(img_b, (center_x, center_y), 5, (0, 0, 255), -1)
-    
-    print(f"找到蓝色球，坐标: ({center_x}, {center_y})")
-    
-    # 5. 鼠标移动和点击
-    pyautogui.moveTo(center_x, center_y, duration=0.2)
-    pyautogui.click()
-                        
-    # 暂停一段时间，避免连续点击
-    time.sleep(0.1) 
+        center_x = int(x)
+        center_y = int(y)
+        # 5. 鼠标移动和点击
+        pyautogui.moveTo(center_x, center_y, duration=0.2)
+        pyautogui.click()
+        
+        time.sleep(0.1) 
     
     
 if __name__ == "__main__":
