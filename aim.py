@@ -12,8 +12,8 @@ while True:
     i-=1
     if keyboard.is_pressed('q') or i == 0:
         break
-    print('剩余次数：',i)
-    
+    print('倒计时：',i)
+
     b_img = tools.get_sc() #cv2.cvtColor(np.array(cv2.imread('test.png')), cv2.COLOR_RGBA2BGR)
 
     cir_cent = tools.find_c(b_img)
