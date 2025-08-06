@@ -8,9 +8,9 @@ import win32api
 import win32gui
 
 # PID
-KP = 0.1  # 调整比例增益，增加移动速度
+KP = 0.1
 KI = 0.0
-KD = 0.45 # 调整微分增益，抑制振荡
+KD = 0.45
 # PID状态
 last_error_x = 0
 last_error_y = 0
@@ -46,7 +46,6 @@ except AttributeError as e:
 
 def get_win():
     try:
-        # Aim Lab的窗口标题
         window_name = "aimlab_tb" 
         hwnd = win32gui.FindWindow(None, window_name)
         if hwnd:
@@ -74,12 +73,16 @@ def get_scrm(window_rect):
 
 def find_edg(scimg):
     hsv = cv2.cvtColor(scimg, cv2.COLOR_BGR2HSV)
-    # 根据游戏中小球的颜色微调HSV阈值
     lower_blue = np.array([82, 199, 118])
     upper_blue = np.array([97, 255, 255])
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    return contours
+    
+    # 新增过滤机制: 忽略面积小于特定阈值的轮廓
+    min_area = 50  # 根据实际情况调整，避免识别到噪点
+    filtered_contours = [c for c in contours if cv2.contourArea(c) > min_area]
+    
+    return filtered_contours
 
 def get_mous():
     return win32api.GetCursorPos()
@@ -87,25 +90,31 @@ def get_mous():
 def find_ccent(contours, mouse_pos, window_rect):
     closest_center = (-1, -1)
     min_distance = float('inf')
+    
+    # 查找距离屏幕中心最近的小球，而不是距离鼠标最近的
+    screen_center_x = window_rect["left"] + window_rect["width"] // 2
+    screen_center_y = window_rect["top"] + window_rect["height"] // 2
+    
     for contour in contours:
         rect = cv2.boundingRect(contour)
-        # 将轮廓中心坐标从窗口相对坐标转换为屏幕绝对坐标
         center_x = rect[0] + rect[2] // 2 + window_rect["left"]
         center_y = rect[1] + rect[3] // 2 + window_rect["top"]
         
-        distance = math.sqrt((center_x - mouse_pos[0])**2 + (center_y - mouse_pos[1])**2)
+        distance = math.sqrt((center_x - screen_center_x)**2 + (center_y - screen_center_y)**2)
         if distance < min_distance:
             min_distance = distance
             closest_center = (center_x, center_y)
+            
     return closest_center
 
-def move_cc(contour_center, speed=0.1):
+# 拆分move_cc函数，使其仅负责移动，不再包含点击逻辑
+def move_mouse_to_target(target_center):
     global last_error_x, last_error_y, integral_x, integral_y
     if not dll:
         print("DLL not loaded, skipping mouse movement.")
         return
         
-    target_x, target_y = contour_center
+    target_x, target_y = target_center
     current_x, current_y = get_mous()
 
     # PID 控制器计算
@@ -134,12 +143,14 @@ def move_cc(contour_center, speed=0.1):
     last_error_x = error_x
     last_error_y = error_y
 
-    distance = math.sqrt(error_x**2 + error_y**2)
-    if distance < 36:
-        try:
-            click_Left_down()
-            time.sleep(0.01)
-            click_Left_up()
-        except Exception as e:
-            print(f"Error calling DLL click functions: {e}")
-        time.sleep(speed)
+def click_mouse():
+    global dll
+    if not dll:
+        print("DLL not loaded, skipping click.")
+        return
+    try:
+        dll.click_Left_down()
+        time.sleep(0.01)
+        dll.click_Left_up()
+    except Exception as e:
+        print(f"Error calling DLL click functions: {e}")
