@@ -20,7 +20,7 @@ def main():
     min_dsten = 13  #最小距离
     
     # 创建PID控制器实例，设置Kp、Ki、Kd参数
-    pid = PID(Kp=1.0, Ki=0.001, Kd=0.022)
+    pid = PID(Kp=1.0, Ki=0.0, Kd=0.022)
     
     tools.init_sct()
     #16:9
