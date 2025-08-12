@@ -9,7 +9,7 @@ import math
 def main():
     
     # --- 初始化 ---
-    print("程序将在3秒后启动...")
+    print("将在3秒后启动...")
     for i in range(3, 0, -1):
         print(f"{i}...")
         time.sleep(1)
@@ -18,7 +18,7 @@ def main():
     speed = 0       #点击间隔
     b_size = 180    #过滤大小
     min_dsten = 13  #最小距离
-    
+
     # 创建PID控制器实例，设置Kp、Ki、Kd参数
     pid = PID(Kp=1.0, Ki=0.0, Kd=0.022)
     
@@ -26,6 +26,7 @@ def main():
     #16:9
     window_width = 640
     window_height = 400
+    
     cv2.namedWindow("screen", cv2.WINDOW_NORMAL)
     cv2.namedWindow("mask", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("screen", window_width, window_height)

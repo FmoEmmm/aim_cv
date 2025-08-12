@@ -19,20 +19,19 @@ def get_scrm():
     sct_img = sct.grab(monitor)
     img = np.array(sct_img)
     
-    scimg = cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
     return img
 
 def img_bule(scimg):
     # 将图像从BGR颜色空间转换为HSV颜色空间
     hsv = cv2.cvtColor(scimg, cv2.COLOR_BGR2HSV)
     # 定义蓝色的HSV阈值
-    lower_blue = np.array([82, 199, 118])
-    upper_blue = np.array([97, 255, 255])
+    lower_blue = np.array([82, 199, 118])#蓝色下界
+    upper_blue = np.array([97, 255, 255])#蓝色上界
     # 根据阈值创建掩膜
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
     return mask
 
-def find_edg(mask,scimg,b_size = 500):
+def find_edg(mask,scimg,b_size = 200):
     # 在掩膜中查找轮廓
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     filtered_contours = []
