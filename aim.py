@@ -15,14 +15,15 @@ def main():
         time.sleep(1)
     print("按 'q' 键退出")
 
-    speed = 0.1
-    b_size = 500 #过滤大小
+    speed = 0       #点击间隔
+    b_size = 200    #过滤大小
+    min_dsten = 10  #最小距离
     
     # 创建PID控制器实例，设置Kp、Ki、Kd参数
-    pid = PID(Kp=2.0, Ki=0.0, Kd=5)
+    pid = PID(Kp=1.1, Ki=0.0, Kd=0.02)
     
     tools.init_sct()
-    
+    #16:9
     window_width = 640
     window_height = 400
     cv2.namedWindow("screen", cv2.WINDOW_NORMAL)
@@ -51,7 +52,7 @@ def main():
             distance = math.sqrt((current[0] - target[0])**2 + (current[1] - target[1])**2)
 
             # 如果距离足够近，则左键点击，否则使用PID控制器移动鼠标
-            if distance < 12:
+            if distance < min_dsten:
                 mous.left_click()
                 time.sleep(speed)
             else:
