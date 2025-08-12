@@ -16,11 +16,11 @@ def main():
     print("按 'q' 键退出")
 
     speed = 0       #点击间隔
-    b_size = 200    #过滤大小
-    min_dsten = 10  #最小距离
+    b_size = 180    #过滤大小
+    min_dsten = 13  #最小距离
     
     # 创建PID控制器实例，设置Kp、Ki、Kd参数
-    pid = PID(Kp=1.1, Ki=0.0, Kd=0.02)
+    pid = PID(Kp=1.0, Ki=0.001, Kd=0.022)
     
     tools.init_sct()
     #16:9
