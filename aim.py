@@ -1,65 +1,73 @@
 import tools
+import mous
+from mous import PID
 import keyboard
 import time
 import cv2
 import math
 
 def main():
-    i = 100
-    speed = 0.1
     
-    # 定义一个阈值，用于判断小球是否足够靠近屏幕中心
-    # 这个值需要根据游戏分辨率和小球大小进行调整
-    click_threshold = 50 
-    
-    for j in range(5):
-        print("start:", j)
+    # --- 初始化 ---
+    print("程序将在3秒后启动...")
+    for i in range(3, 0, -1):
+        print(f"{i}...")
         time.sleep(1)
-    
-    while True:
-        if keyboard.is_pressed('q') or i == 0:
-            break
-        #i -= 1
-        print("倒计时", i)
-        
-        window_rect = tools.get_win()
-        if not window_rect:
-            print("Aim Lab window not found, waiting...")
-            time.sleep(1)
-            continue
-            
-        b_img = tools.get_scrm(window_rect)
-        if b_img is None:
-            time.sleep(0.1)
-            continue
-        
-        # 显示捕捉画面（可选）
-        cv2.imshow('Capture', b_img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-        
-        contours = tools.find_edg(b_img)
-        mouse_pos = tools.get_mous()
-        
-        # 寻找距离屏幕中心最近的小球
-        closest_center = tools.find_ccent(contours, mouse_pos, window_rect)
-        
-        if closest_center != (-1, -1):
-            target_x, target_y = closest_center
-            
-            # 获取屏幕中心坐标
-            screen_center_x = window_rect["left"] + window_rect["width"] // 2
-            screen_center_y = window_rect["top"] + window_rect["height"] // 2
-            
-            # 计算小球与屏幕中心的距离
-            distance_to_center = math.sqrt((target_x - screen_center_x)**2 + (target_y - screen_center_y)**2)
-            
-            # 如果小球在屏幕中心附近，直接点击
-            if distance_to_center < click_threshold:
-                tools.click_mouse()
-            # 否则，移动鼠标到小球位置
-            else:
-                tools.move_mouse_to_target(closest_center)
+    print("按 'q' 键退出")
 
+    speed = 0.1
+    b_size = 500 #过滤大小
+    
+    # 创建PID控制器实例，设置Kp、Ki、Kd参数
+    pid = PID(Kp=2.0, Ki=0.0, Kd=5)
+    
+    tools.init_sct()
+    
+    window_width = 640
+    window_height = 400
+    cv2.namedWindow("screen", cv2.WINDOW_NORMAL)
+    cv2.namedWindow("mask", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("screen", window_width, window_height)
+    cv2.resizeWindow("mask", window_width, window_height)
+
+    while True:
+        if keyboard.is_pressed('q'):
+            print("out")
+            break
+            
+        sc_img = tools.get_scrm()
+        b_img= tools.img_bule(sc_img)
+        contours = tools.find_edg(b_img,sc_img,b_size)
+        
+        mouse_pos = mous.get_mous()
+        closest_center = tools.find_ccent(contours, mouse_pos)
+        
+
+        if closest_center != (-1, -1):
+            target = closest_center
+            current = mouse_pos
+
+            # 计算鼠标到目标的距离
+            distance = math.sqrt((current[0] - target[0])**2 + (current[1] - target[1])**2)
+
+            # 如果距离足够近，则左键点击，否则使用PID控制器移动鼠标
+            if distance < 12:
+                mous.left_click()
+                time.sleep(speed)
+            else:
+                mous.move_to(current, target, pid)
+        
+        # 如果找到目标，在屏幕上绘制标记
+        if closest_center != (-1, -1):
+            cv2.circle(sc_img, closest_center, 10, (0, 0, 255), -1)
+            
+        cv2.imshow("screen", sc_img)
+        cv2.imshow("mask", b_img)
+        
+        if cv2.waitKey(1) & 0xFF == 27: # 按ESC键也可退出
+            break
+        
+    cv2.destroyAllWindows()
+    
 if __name__ == "__main__":
     main()
