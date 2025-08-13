@@ -83,7 +83,7 @@ def mous_mov(x,y):
         move_R(x,y)
 
 
-def move_to(start_pos, end_pos, pid):
+def move_pid(start_pos, end_pos, pid):
     """
     使用PID控制器平滑移动鼠标到目标点。
     """

@@ -6,6 +6,8 @@ import time
 import cv2
 import math
 
+#! PID控制
+
 def main():
     
     # --- 初始化 ---
@@ -20,7 +22,8 @@ def main():
     min_dsten = 13  #最小距离
 
     # 创建PID控制器实例，设置Kp、Ki、Kd参数
-    pid = PID(Kp=1.0, Ki=0.0, Kd=0.022)
+    #pid = PID(Kp=1.0, Ki=0.0, Kd=0.022) #多目标终极
+    pid = PID(Kp=1.8, Ki=0.0, Kd=0.022) #网格
     
     tools.init_sct()
     #16:9
@@ -57,7 +60,7 @@ def main():
                 mous.left_click()
                 time.sleep(speed)
             else:
-                mous.move_to(current, target, pid)
+                mous.move_pid(current, target, pid)
         
         # 如果找到目标，在屏幕上绘制标记
         if closest_center != (-1, -1):
